@@ -1,78 +1,143 @@
 const readline = require('readline');
 
-let inputData = [];
-let persons = [];
+const inputData = [];
+const persons = {};
+let highestBlood = 0;
+let nextHeir;
 
 class Person {
-	constructor (_name, _blood, _parent1, _parent2) {
+	constructor(_name, _blood, _parent1, _parent2) {
 		this.name = _name;
 		this.blood = _blood;
 		this.parent1 = _parent1;
 		this.parent2 = _parent2;
+		this.calculated = false;
 	}
-
-	
 }
 
 /**
- * Return the amount of blood of the founder
- * @param {String} claimer 
- * @param {Array} list 
+ * Return the amount of blood of a given person
+ * @param {String} person
  */
-const calculateBlood = (claimer, list) => {
-	console.log(`Calculating blood amount for claimer: ${claimer.name}`);
-	
-		for (let i = 0; i < list.length; i++) {			
-			if (persons[i + 1].blood === 0) {
-				const iClaimer = list[i].split(' ')[0];
-				if (iClaimer === claimer){
-					const iParent1 = list[i].split(' ')[1];
-					const iParent2 = list[i].split(' ')[2];
-					console.log(`processing data: ${iClaimer}'s parents: ${iParent1} and ${iParent2}`);
-					iClaimer.blood = calculateBlood(iClaimer, list);
-				}
-			}
-		}
-		return claimer.blood;
-	
+const calculateBlood = (person) => {
+	// console.log(`Calculating blood amount for person: ${person.name}`);
+	let par1bl = 0;
+	let par2bl = 0;
+
+	if (persons[person.parent1] && persons[person.parent1].calculated) {
+		par1bl = persons[person.parent1].blood;
+	} else if (persons[person.parent1]) {
+		par1bl = calculateBlood(persons[person.parent1]);
+	} else {
+		par1bl = 0;
+	}
+
+	if (persons[person.parent2] && persons[person.parent2].calculated) {
+		par2bl = persons[person.parent2].blood;
+	} else if (persons[person.parent2]) {
+		par2bl = calculateBlood(persons[person.parent2]);
+	} else {
+		par2bl = 0;
+	}
+
+	person.calculated = true;
+	person.blood = (par1bl + par2bl) / 2;
+
+	return (par1bl + par2bl) / 2;
 };
 
+/**
+ * Returns an object with two keys with values as parents names
+ * @param {Stg} name
+ * @param {Array} arr
+ */
+const calculateParents = (name, arr) => {
+	for (let i = 0; i < arr.length; i++) {
+		const currentItem = arr[i].split(' ');
+		// console.log(`Pass no: ${i + 1} - Looking for ${name}'s parents.`);
+		if (currentItem[0] === name) {
+			// console.log(`Found them! ${name}'s parents are: ${currentItem[1]} and ${currentItem[2]}`);
+			return { parent1: currentItem[1], parent2: currentItem[2] };
+		}
+		// console.log(`Not in this pass! Going for pass no: ${i + 2}`);
+	}
+	// console.log(`We shouldn't be here! It appears that ${name} has no parents`);
+	return { parent1: '', parent2: '' };
+};
 
 const r1 = readline.createInterface({
 	input: process.stdin,
-	output: process.stdout
+	output: process.stdout,
 });
 
 r1.on('line', (input) => {
-	inputData.push(input);
+	if (input !== '') { inputData.push(input); }
 });
 
 r1.on('close', () => {
-	const relativesCount = parseInt(inputData[0].split(' ')[0]);
-	const claimersCount = parseInt(inputData[0].split(' ')[1]);
+	// console.log('Finished reading the file.');
+	// console.log(inputData);
+
+	const relativesCount = parseInt(inputData[0].split(' ')[0], 10);
+	// const claimersCount = parseInt(inputData[0].split(' ')[1], 10);
 	const founder = inputData[1];
 	const relativesArr = inputData.slice(2, 2 + relativesCount);
 	const claimersArr = inputData.slice(2 + relativesCount);
-	persons.push(new Person(founder, 1, '', ''));
-	for (let i = 0; i < claimersCount; i++){
-		persons.push(new Person(claimersArr[i], 0, '', ''));
+	const allPeople = [];
+	relativesArr.forEach((row) => {
+		const el = row.split(' ');
+		el.forEach((name) => {
+			if (!allPeople.includes(name)) { allPeople.push(name); }
+		});
+	});
+	// console.log(`Number of relatives: ${relativesCount}`);
+	// console.log(`Number of claimers: ${claimersCount}`);
+	// console.log(`The Founder: ${founder}`);
+	// console.log('Relatives:');
+	// console.log(relativesArr);
+	// console.log('Claimers:');
+	// console.log(claimersArr);
+	// console.log('List of all people involved:');
+	// console.log(allPeople);
+
+	// Add people to the persons list with calculated parents
+	for (let i = 0; i < allPeople.length; i++) {
+		const parents = calculateParents(allPeople[i], relativesArr);
+		persons[`${allPeople[i]}`] = new Person(allPeople[i], 0, parents.parent1, parents.parent2);
 	}
 
-	for (let i = 0; i < persons.length; i++){
-		if (persons[i].name != founder)
-			persons[i].blood = calculateBlood(persons[i], relativesArr);
+	// The founder has to have full blood level
+	persons[`${founder}`].blood = 1;
+	persons[`${founder}`].calculated = true;
+
+	// console.log('Persons list with parents:');
+	// console.table(persons);
+
+	// Calculate blood levels of the people and update persons list
+	for (const person in persons) {
+		if (persons.hasOwnProperty(person)) {
+			const currentP = persons[person];
+			if (currentP.name !== founder && currentP.calculated === false) {
+				// console.log(currentP.name, persons[currentP.parent1].blood);
+				currentP.blood = calculateBlood(currentP);
+			}
+		}
 	}
 
-	console.log();	
-	console.log('Finished reading the file.');
-	console.log(inputData);
-	console.log(`Number of relatives: ${relativesCount}`);
-	console.log(`Number of claimers: ${claimersCount}`);
-	console.log(`The Founder: ${founder}`);
-	console.log('Relatives:');
-	console.log(relativesArr);
-	console.log('Claimers:');
-	console.log(claimersArr);
-	console.table(persons);
-	
-})
+	// console.log('Persons list with parents and blood:');
+	// console.table(persons);
+
+	// Find the person with the highest amount of royal blood
+	claimersArr.forEach((claimer) => {
+		if (persons[claimer]) {
+			if (persons[claimer].blood > highestBlood) {
+				highestBlood = persons[claimer].blood;
+				nextHeir = persons[claimer];
+			}
+		}
+		// after this loop we know the next heir
+	});
+
+	// Printout the name of the next heir.
+	console.log(nextHeir.name);
+});
