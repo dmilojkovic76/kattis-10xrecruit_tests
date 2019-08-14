@@ -25,9 +25,11 @@ const findNext = (arr, row, col) => {
 	let newCol = 0;
 	const lastRow = path[path.length - 1][0];
 	const lastCol = path[path.length - 1][1];
+	// TODO: function-ize this next repeating section
 	if (arr[row - 1] && arr[row - 1][col] < s) {
 		if (lastRow !== row - 1 || lastCol !== col) {
-			if (!path.includes([row - 1, col])) { // includes ne radi dobro zbog necega
+			// Go through the path array and each element e to see if this position has already been recorded.
+			if (!path.some(e => e.every((value, index) => value === [row - 1, col][index]))) {
 				s = arr[row - 1][col];
 				newRow = row - 1;
 				newCol = col;
@@ -36,7 +38,8 @@ const findNext = (arr, row, col) => {
 	}
 	if (arr[row + 1] && arr[row + 1][col] < s) {
 		if (lastRow !== row + 1 || lastCol !== col) {
-			if (!path.includes([row + 1, col])) {
+			// Go through the path array and each element e to see if this position has already been recorded.
+			if (!path.some(e => e.every((value, index) => value === [row + 1, col][index]))) {
 				s = arr[row + 1][col];
 				newRow = row + 1;
 				newCol = col;
@@ -45,7 +48,8 @@ const findNext = (arr, row, col) => {
 	}
 	if (arr[row][col - 1] && arr[row][col - 1] < s) {
 		if (lastRow !== row || lastCol !== col - 1) {
-			if (!path.includes([row, col - 1])) {
+			// Go through the path array and each element e to see if this position has already been recorded.
+			if (!path.some(e => e.every((value, index) => value === [row, col - 1][index]))) {
 				s = arr[row][col - 1];
 				newRow = row;
 				newCol = col - 1;
@@ -54,13 +58,15 @@ const findNext = (arr, row, col) => {
 	}
 	if (arr[row][col + 1] && arr[row][col + 1] < s) {
 		if (lastRow !== row || lastCol !== col + 1) {
-			if (!path.includes([row, col + 1])) {
+			// Go through the path array and each element e to see if this position has already been recorded.
+			if (!path.some(e => e.every((value, index) => value === [row, col + 1][index]))) {
 				s = arr[row][col + 1];
 				newRow = row;
 				newCol = col + 1;
 			}
 		}
 	}
+	// After all the if's, newRow and newCol should contain values for the next cell.
 	return [newRow, newCol];
 };
 
@@ -85,7 +91,7 @@ r1.on('close', () => {
 	let biggest = 0;
 	let start = true;
 
-	while (column < columnsCount) {
+	while (column < columnsCount - 1) {
 		let rowIndex = path[path.length - 1] ? path[path.length - 1][0] : 0;
 		if (start) {
 			let smallest = 1000001;
@@ -101,13 +107,15 @@ r1.on('close', () => {
 
 		const nextCell = findNext(grid, rowIndex, column);
 		path.push(nextCell);
-		column = nextCell[1];
-		console.log('Came back from findNext:');
-		console.log(nextCell[0], nextCell[1]);
-		console.log(path);
+		column = nextCell[1]; // eslint-disable-line prefer-destructuring
 	}
 
-	console.log(grid);
-	console.log(path);
+	// console.log(grid);
+	// console.log(path);
+	path.forEach((p) => {
+		// console.log(p);
+		biggest = biggest > grid[p[0]][p[1]] ? biggest : parseInt(grid[p[0]][p[1]], 10);
+		// console.log(biggest);
+	});
 	console.log(biggest);
 });
