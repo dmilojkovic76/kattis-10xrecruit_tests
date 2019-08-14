@@ -20,6 +20,8 @@ You can view the problems at https://10xrecruit.kattis.com/test/programming/ief6
 ### Day 3 15.08.2019:
 17:30 - 21:30 - Finished with second problem
 
+</br>
+
 ## Problem C
 ### Day 3 15.08.2019:
 22:00 - 01:00 - All finished
