@@ -15,4 +15,11 @@ You can view the problems at https://10xrecruit.kattis.com/test/programming/ief6
 
 ## Hiking Route
 ### Day 2 03.08.2019:
-1:10 - 12:23 - Setup the project
+1:10 - 00:23 - Setup for the problem
+
+### Day 3 15.08.2019:
+17:30 - 21:30 - Finished with second problem
+
+## Problem C
+### Day 3 15.08.2019:
+22:00 - 01:00 - All finished
