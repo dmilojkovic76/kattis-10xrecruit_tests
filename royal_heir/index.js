@@ -3,7 +3,7 @@ const readline = require('readline');
 const inputData = [];
 const persons = {};
 let highestBlood = 0;
-let nextHeir;
+let nextHeir = 'No Heir thus far!';
 
 class Person {
 	constructor(_name, _blood, _parent1, _parent2) {
@@ -40,8 +40,9 @@ const calculateBlood = (person) => {
 		par2bl = 0;
 	}
 
-	person.calculated = true;
-	person.blood = (par1bl + par2bl) / 2;
+	// TODO: This is terrible, needs fixing! Do not mutate the object that is being passed in.
+	person.calculated = true; // eslint-disable-line no-param-reassign
+	person.blood = (par1bl + par2bl) / 2; // eslint-disable-line no-param-reassign
 
 	return (par1bl + par2bl) / 2;
 };
@@ -113,9 +114,10 @@ r1.on('close', () => {
 	// console.log('Persons list with parents:');
 	// console.table(persons);
 
+	// TODO: Use a different method of iterrating over keys in persons object
 	// Calculate blood levels of the people and update persons list
-	for (const person in persons) {
-		if (persons.hasOwnProperty(person)) {
+	for (const person in persons) { // eslint-disable-line no-restricted-syntax
+		if (persons.hasOwnProperty(person)) { // eslint-disable-line no-prototype-builtins
 			const currentP = persons[person];
 			if (currentP.name !== founder && currentP.calculated === false) {
 				// console.log(currentP.name, persons[currentP.parent1].blood);
